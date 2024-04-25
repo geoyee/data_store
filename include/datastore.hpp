@@ -3,6 +3,9 @@
 #ifndef DATASTORE_HPP
 #define DATASTORE_HPP
 
+#include "msgpack.hpp"
+#include "mio/mmap.hpp"
+
 #include <iostream>
 #include <unordered_map>
 #include <string>
