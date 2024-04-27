@@ -1,16 +1,28 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.15)
+cmake_minimum_required(VERSION 3.15)
 
-PROJECT(example)
+project(example)
 
-SET(CXX_STANDARD 14)
-SET(DEPENDS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
-SET(MSGPACK_USE_BOOST OFF)
+set(CMAKE_CXX_STANDARD 17)
+add_definitions(-DMSGPACK_NO_BOOST)
 
-ADD_SUBDIRECTORY(${DEPENDS_DIR}/mio)
-ADD_SUBDIRECTORY(${DEPENDS_DIR}/msgpack-c)
+if (NOT MSVC)
+    find_program(CCACHE_PROGRAM ccache)
+    if (CCACHE_PROGRAM)
+        message(STATUS "[${PROJECT_NAME}] Found CCache: ${CCACHE_PROGRAM}")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PROGRAM})
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PROGRAM})
+    endif()
+endif()
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(DEPEND_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 
-ADD_EXECUTABLE(${PROJECT_NAME} main.cpp)
+file(GLOB CURRENT_HEADER ${ROOT_DIR}/include/*)
+message("[${PROJECT_NAME}] Current HEADER: ${CURRENT_HEADER}")
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC mio msgpack-cxx)
+add_executable(${PROJECT_NAME} main.cpp ${CURRENT_HEADER})
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${ROOT_DIR}/include
+    ${DEPEND_DIR}/msgpack-cxx-611
+)

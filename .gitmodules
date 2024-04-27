@@ -1,7 +1,0 @@
-[submodule "thirdparty/mio"]
-	path = thirdparty/mio
-	url = https://github.com/vimpunk/mio.git
-[submodule "thirdparty/msgpack-c"]
-	path = thirdparty/msgpack-c
-	url = https://github.com/msgpack/msgpack-c.git
-	branch = cpp_master

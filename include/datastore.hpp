@@ -1,81 +1,85 @@
 #pragma once
 
-#ifndef DATASTORE_HPP
-#define DATASTORE_HPP
+#ifndef __MM_DATASTORE_HPP__
+#define __MM_DATASTORE_HPP__
 
-#include "msgpack.hpp"
-#include "mio/mmap.hpp"
+#include "codec.hpp"
+#include "binaryf.hpp"
 
-#include <iostream>
-#include <unordered_map>
-#include <string>
-#include <type_traits>
-
-class DataStore
+namespace mm
 {
-public:
-    DataStore() = default;
-    DataStore(const DataStore& other) = delete;
-    DataStore(DataStore&& other) = delete;
-    ~DataStore() = default;
-    DataStore& operator=(const DataStore& other) = delete;
+    namespace fs = std::filesystem;
 
-    template<typename T,
-             std::enable_if_t<std::is_pointer<std::decay<T>>::value == 1, int> = 1,
-             std::enable_if_t<std::is_copy_constructible<std::decay<T>>::value == 1, int> = 1>
-    void put(const std::string& key, T value)
+    const std::string MMF_FILE_PATH = std::filesystem::current_path().string() + "/db.mmf";
+
+    class DataStore
     {
-        _dataMap[key] = static_cast<void *>(new std::decay<T>(*value));
-    }
+    public:
+        DataStore() : _offsetMap({})
+        {
+            _binFile.open(MMF_FILE_PATH);
+            if (_binFile.isInit())
+            {
+                _binFile.mmap(_offsetMap);
+            }
+        }
 
-    template<typename T,
-             std::enable_if_t<std::is_pointer<std::decay<T>>::value == 1, int> = 1,
-             std::enable_if_t<std::is_copy_constructible<std::decay<T>>::value == 0, int> = 1>
-    void put(const std::string& key, T value)
-    {
-        _dataMap[key] = static_cast<void *>(std::move(value));
-    }
+        DataStore(const DataStore &other) = delete;
+        DataStore(DataStore &&other) = delete;
+        DataStore &operator=(const DataStore &other) = delete;
+        ~DataStore() = default;
 
-    template<typename T,
-             std::enable_if_t<std::is_pointer<std::decay<T>>::value == 0, int> = 1,
-             std::enable_if_t<std::is_copy_constructible<std::decay<T>>::value == 1, int> = 1>
-    void put(const std::string& key, T value)
-    {
-        _dataMap[key] = static_cast<void *>(new std::decay<T>(value));
-    }
+        template <typename T>
+        void put(const std::string &key, T value)
+        {
+            size_t hashKey = calcHash(key);
+            std::string strValue = codec::pack(value);
+            if (find(key))
+            {
+                _binFile.swap(_offsetMap[hashKey], strValue);
+            }
+            else
+            {
+                _binFile.put(hashKey, strValue);
+            }
+        }
 
-    template<typename T,
-             std::enable_if_t<std::is_pointer<std::decay<T>>::value == 0, int> = 1,
-             std::enable_if_t<std::is_copy_constructible<std::decay<T>>::value == 0, int> = 1>
-    void put(const std::string& key, T value)
-    {
-        _dataMap[key] = static_cast<void *>(std::move(&value));
-    }
+        template <typename T>
+        T get(const std::string &key)
+        {
+            size_t offset = _offsetMap.at(calcHash(key));
+            std::string result = _binFile.get(offset);
+            return codec::unpack<T>(result.data(), result.size());
+        }
 
-    template<typename T, std::enable_if_t<std::is_pointer<std::decay<T>>::value == 1, int> = 1>
-    T get(const std::string& key)
-    {
-        return static_cast<T>(_dataMap[key]);
-    }
+        bool find(const std::string &key)
+        {
+            return _offsetMap.find(calcHash(key)) != _offsetMap.end();
+        }
 
-    template<typename T, std::enable_if_t<std::is_pointer<std::decay<T>>::value == 0, int> = 1>
-    T get(const std::string& key)
-    {
-        return *(static_cast<T *>(_dataMap[key]));
-    }
+        void remove(const std::string &key)
+        {
+            _offsetMap.erase(calcHash(key));
+        }
 
-    bool find(const std::string& key)
-    {
-        return _dataMap.find(key) != _dataMap.end();
-    }
+        void finish()
+        {
+            _offsetMap.clear();
+            if (std::filesystem::exists(MMF_FILE_PATH))
+            {
+                std::filesystem::remove(MMF_FILE_PATH);
+            }
+        }
 
-    void remove(const std::string& key)
-    {
-        _dataMap.erase(key);
-    }
+    private:
+        size_t calcHash(const std::string &str)
+        {
+            return std::hash<std::string>{}(str);
+        }
 
-private:
-    std::unordered_map<std::string, void *> _dataMap = {};
-};
+        binaryf::BinaryFile _binFile;
+        std::unordered_map<size_t, size_t> _offsetMap;
+    };
+} // namespace mm
 
-#endif // DATASTORE_HPP
+#endif // __MM_DATASTORE_HPP__
