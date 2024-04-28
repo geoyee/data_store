@@ -8,6 +8,7 @@
 #include <cstring>
 #include <exception>
 #include <filesystem>
+#include <mutex>
 
 namespace mm
 {
@@ -36,7 +37,8 @@ namespace mm
                 char *zErrMsg = NULL;
                 char *sql = sqlite3_mprintf(
                     "INSERT OR REPLACE INTO Datas VALUES(%s, '%q')", std::to_string(key).c_str(), value.c_str());
-                open();
+                // open();
+                std::lock_guard<std::mutex> locker(_mutex);
                 if (sqlite3_exec(_sdb, sql, NULL, NULL, &zErrMsg) != SQLITE_OK)
                 {
                     std::cerr << "[Error] sql failed in put: " << zErrMsg << std::endl;
@@ -54,7 +56,8 @@ namespace mm
             {
                 char *zErrMsg = NULL;
                 char *sql = sqlite3_mprintf("DELETE FROM Datas WHERE Key=%s", std::to_string(key).c_str());
-                open();
+                // open();
+                std::lock_guard<std::mutex> locker(_mutex);
                 if (sqlite3_exec(_sdb, sql, NULL, NULL, &zErrMsg) != SQLITE_OK)
                 {
                     std::cerr << "[Error] sql failed in del: " << zErrMsg << std::endl;
@@ -93,7 +96,7 @@ namespace mm
                 char *zErrMsg = NULL;
                 std::string valMsg;
                 char *sql = sqlite3_mprintf("SELECT * FROM Datas WHERE Key=%s", std::to_string(key).c_str());
-                open();
+                // open();
                 if (sqlite3_exec(_sdb, sql, callback, valMsg.data(), &zErrMsg) != SQLITE_OK)
                 {
                     std::cerr << "[Error] sql failed in get: " << zErrMsg << std::endl;
@@ -140,6 +143,7 @@ namespace mm
             }
 
             std::string _fileName;
+            std::mutex _mutex;
             sqlite3 *_sdb = NULL;
         };
     } // namespace sqlitef
