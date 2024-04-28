@@ -5,9 +5,6 @@
 
 #include <iostream>
 #include <string>
-#include <cstring>
-#include <functional>
-#include <type_traits>
 
 namespace mm
 {

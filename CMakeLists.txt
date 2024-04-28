@@ -4,7 +4,9 @@ project(example)
 
 set(CMAKE_CXX_STANDARD 17)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 add_definitions(-DMSGPACK_NO_BOOST)
+add_definitions(-DMSGPACK_CXX17)
 
 if (NOT MSVC)
     find_program(CCACHE_PROGRAM ccache)
