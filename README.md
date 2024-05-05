@@ -32,9 +32,9 @@ int e2 = ds.get<std::vector<double>>("e");
 DataStore ds;
 
 // 读取数据
-int a2 = ds.get<int>("a");  // ok
-int c2 = ds.get<std::string>("c");  // ok
-int e2 = ds.get<std::vector<double>>("e");  // ok
+int a3 = ds.get<int>("a");  // ok
+int c3 = ds.get<std::string>("c");  // ok
+int e3 = ds.get<std::vector<double>>("e");  // ok
 ```
 
 程序正常退出前再清理数据库，下次重启程序后拥有全新的数据仓库
