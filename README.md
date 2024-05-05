@@ -40,7 +40,3 @@ int e2 = ds.get<std::vector<double>>("e");  // ok
 
 ds.finish();
 ```
-
-## TODO
-
-- [ ] 替换更强大的序列化/反序列化库，支持 std::atomic、std::function 等的存储
