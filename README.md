@@ -5,6 +5,8 @@
 ## 示例
 
 ```c++
+#include "datastore.hpp"
+
 DataStore ds;
 
 int a = 543;
@@ -25,6 +27,8 @@ int e2 = ds.get<std::vector<double>>("e");
 由于数据存储在数据库中，因此当程序崩溃或其他情况下，重启程序仍然可以取到之前保存的数据。同时存储 msgpack 序列化的数据，能够更好的节约内存
 
 ```c++
+#include "datastore.hpp"
+
 DataStore ds;
 
 // 读取数据
