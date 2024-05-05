@@ -8,9 +8,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 add_definitions(-DMSGPACK_NO_BOOST)
 add_definitions(-DMSGPACK_CXX17)
 
-if (NOT MSVC)
+if(NOT MSVC)
     find_program(CCACHE_PROGRAM ccache)
-    if (CCACHE_PROGRAM)
+    if(CCACHE_PROGRAM)
         message(STATUS "[${PROJECT_NAME}] Found CCache: ${CCACHE_PROGRAM}")
         set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_PROGRAM})
         set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_PROGRAM})
@@ -36,4 +36,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${DEPEND_DIR}/sqlite/include
 )
 
-target_link_libraries (${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_NAME}
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_DL_LIBS}
+)
