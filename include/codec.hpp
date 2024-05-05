@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 namespace mm
 {
@@ -31,7 +32,7 @@ namespace mm
             }
             catch (...)
             {
-                throw std::invalid_argument("[Error] unpack failed: Args not match");
+                throw std::invalid_argument("[Error] unpack failed: type \"" + std::string(typeid(T).name()) + "\" not match");
             }
         }
     } // namespace codec

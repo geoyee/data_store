@@ -20,7 +20,6 @@ namespace mm
             SqliteFile(const std::string &path) : _fileName(path)
             {
                 open();
-                // close();
             }
 
             ~SqliteFile()
@@ -37,7 +36,6 @@ namespace mm
                 char *zErrMsg = NULL;
                 char *sql = sqlite3_mprintf(
                     "INSERT OR REPLACE INTO Datas VALUES(%s, '%q')", std::to_string(key).c_str(), value.c_str());
-                // open();
                 std::lock_guard<std::mutex> locker(_mutex);
                 if (sqlite3_exec(_sdb, sql, NULL, NULL, &zErrMsg) != SQLITE_OK)
                 {
@@ -47,8 +45,8 @@ namespace mm
                     close();
                     return false;
                 }
+                sqlite3_free(zErrMsg);
                 sqlite3_free(sql);
-                // close();
                 return true;
             }
 
@@ -56,7 +54,6 @@ namespace mm
             {
                 char *zErrMsg = NULL;
                 char *sql = sqlite3_mprintf("DELETE FROM Datas WHERE Key=%s", std::to_string(key).c_str());
-                // open();
                 std::lock_guard<std::mutex> locker(_mutex);
                 if (sqlite3_exec(_sdb, sql, NULL, NULL, &zErrMsg) != SQLITE_OK)
                 {
@@ -66,8 +63,8 @@ namespace mm
                     close();
                     return false;
                 }
+                sqlite3_free(zErrMsg);
                 sqlite3_free(sql);
-                // close();
                 return true;
             }
 
@@ -96,7 +93,6 @@ namespace mm
                 char *zErrMsg = NULL;
                 std::string valMsg;
                 char *sql = sqlite3_mprintf("SELECT * FROM Datas WHERE Key=%s", std::to_string(key).c_str());
-                // open();
                 if (sqlite3_exec(_sdb, sql, callback, valMsg.data(), &zErrMsg) != SQLITE_OK)
                 {
                     std::cerr << "[Error] sql failed in get: " << zErrMsg << std::endl;
@@ -105,8 +101,8 @@ namespace mm
                     close();
                     return "\0";
                 }
+                sqlite3_free(zErrMsg);
                 sqlite3_free(sql);
-                // close();
                 std::string result(valMsg.data());
                 return result;
             }
@@ -128,9 +124,10 @@ namespace mm
                     {
                         std::string errStr(zErrMsg);
                         sqlite3_free(zErrMsg);
-                        // sqlite3_close(_sdb);
+                        sqlite3_close(_sdb);
                         throw std::runtime_error("[Error] sql failed in create: " + errStr);
                     }
+                    sqlite3_free(zErrMsg);
                     std::filesystem::permissions(_fileName,
                                                  (std::filesystem::perms::owner_read | std::filesystem::perms::owner_write |
                                                   std::filesystem::perms::group_read | std::filesystem::perms::others_read));

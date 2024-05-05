@@ -36,7 +36,23 @@ namespace mm
         {
             size_t hashKey = calcHash(key);
             std::string result = _sqlFile.get(hashKey);
-            return codec::unpack<T>(result.data(), result.size());
+            if (result != "\0")
+            {
+                try
+                {
+                    return codec::unpack<T>(result.data(), result.size());
+                }
+                catch (const std::exception &e)
+                {
+                    std::cerr << e.what() << std::endl;
+                    return T();
+                }
+            }
+            else
+            {
+                std::cerr << "[Error] unpack failed: Unable to find key \"" << key << "\"" << std::endl;
+                return T();
+            }
         }
 
         bool find(const std::string &key)

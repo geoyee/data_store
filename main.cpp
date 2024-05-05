@@ -44,9 +44,21 @@ int main(int argc, char **argv)
         }
         std::cout << std::endl;
     }
-    if (argc == 2 && std::string(argv[1]) == "clear")
+    if (argc == 2)
     {
-        ds.finish();
+        if (std::string(argv[1]) == "remove")
+        {
+            ds.remove("a");
+        }
+        else if (std::string(argv[1]) == "clear")
+        {
+            ds.finish();
+        }
+        else if (std::string(argv[1]) == "invalid")
+        {
+            ds.get<std::string>("a");
+            ds.get<int>("v");
+        }
     }
 
     return 0;
